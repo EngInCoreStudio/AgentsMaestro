@@ -71,8 +71,8 @@ ${chalk.bold('Examples:')}
 ${chalk.bold('Notes:')}
   • You must be authenticated with AgentsMaestro first (run 'happy auth login')
   • API keys are encrypted and stored securely in AgentsMaestro cloud
-  • You can manage your stored keys at app.happy.engineering
-`); // [AM] TODO: webapp URL
+  • You can manage your stored keys at app.agma.engincore.it
+`);
 }
 
 async function handleConnectVendor(vendor: 'codex' | 'claude' | 'gemini', displayName: string): Promise<void> {
