@@ -10,7 +10,7 @@ import { log } from "@/utils/log";
 // the happy:// pairing URL using base64url, and the PWA web client
 // forwards them as-is to the server. Without this, /v1/auth/request/status
 // (called during PWA pairing) crashes with HTTP 500.
-function decodeBase64Either(s: string): Uint8Array {
+function decodeBase64Either(s: string) {
     const standard = s.replace(/-/g, '+').replace(/_/g, '/');
     const padded = standard + '='.repeat((4 - standard.length % 4) % 4);
     return privacyKit.decodeBase64(padded);
