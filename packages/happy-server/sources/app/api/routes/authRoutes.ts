@@ -5,6 +5,17 @@ import { db } from "@/storage/db";
 import { auth } from "@/app/auth/auth";
 import { log } from "@/utils/log";
 
+// [AM] Tolerant base64 decoder: accepts both base64 (RFC 4648 §4)
+// and base64url (RFC 4648 §5). Required because the CLI emits keys in
+// the happy:// pairing URL using base64url, and the PWA web client
+// forwards them as-is to the server. Without this, /v1/auth/request/status
+// (called during PWA pairing) crashes with HTTP 500.
+function decodeBase64Either(s: string): Uint8Array {
+    const standard = s.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = standard + '='.repeat((4 - standard.length % 4) % 4);
+    return privacyKit.decodeBase64(padded);
+}
+
 export function authRoutes(app: Fastify) {
     app.post('/v1/auth', {
         schema: {
@@ -16,9 +27,9 @@ export function authRoutes(app: Fastify) {
         }
     }, async (request, reply) => {
         const tweetnacl = (await import("tweetnacl")).default;
-        const publicKey = privacyKit.decodeBase64(request.body.publicKey);
-        const challenge = privacyKit.decodeBase64(request.body.challenge);
-        const signature = privacyKit.decodeBase64(request.body.signature);
+        const publicKey = decodeBase64Either(request.body.publicKey);
+        const challenge = decodeBase64Either(request.body.challenge);
+        const signature = decodeBase64Either(request.body.signature);
         const isValid = tweetnacl.sign.detached.verify(challenge, signature, publicKey);
         if (!isValid) {
             return reply.code(401).send({ error: 'Invalid signature' });
@@ -59,7 +70,7 @@ export function authRoutes(app: Fastify) {
         }
     }, async (request, reply) => {
         const tweetnacl = (await import("tweetnacl")).default;
-        const publicKey = privacyKit.decodeBase64(request.body.publicKey);
+        const publicKey = decodeBase64Either(request.body.publicKey);
         const isValid = tweetnacl.box.publicKeyLength === publicKey.length;
         if (!isValid) {
             return reply.code(401).send({ error: 'Invalid public key' });
@@ -101,7 +112,7 @@ export function authRoutes(app: Fastify) {
         }
     }, async (request, reply) => {
         const tweetnacl = (await import("tweetnacl")).default;
-        const publicKey = privacyKit.decodeBase64(request.query.publicKey);
+        const publicKey = decodeBase64Either(request.query.publicKey);
         const isValid = tweetnacl.box.publicKeyLength === publicKey.length;
         if (!isValid) {
             return reply.send({ status: 'not_found', supportsV2: false });
@@ -135,7 +146,7 @@ export function authRoutes(app: Fastify) {
     }, async (request, reply) => {
         log({ module: 'auth-response' }, `Auth response endpoint hit - user: ${request.userId}, publicKey: ${request.body.publicKey.substring(0, 20)}...`);
         const tweetnacl = (await import("tweetnacl")).default;
-        const publicKey = privacyKit.decodeBase64(request.body.publicKey);
+        const publicKey = decodeBase64Either(request.body.publicKey);
         const isValid = tweetnacl.box.publicKeyLength === publicKey.length;
         if (!isValid) {
             log({ module: 'auth-response' }, `Invalid public key length: ${publicKey.length}`);
@@ -186,7 +197,7 @@ export function authRoutes(app: Fastify) {
         }
     }, async (request, reply) => {
         const tweetnacl = (await import("tweetnacl")).default;
-        const publicKey = privacyKit.decodeBase64(request.body.publicKey);
+        const publicKey = decodeBase64Either(request.body.publicKey);
         const isValid = tweetnacl.box.publicKeyLength === publicKey.length;
         if (!isValid) {
             return reply.code(401).send({ error: 'Invalid public key' });
@@ -221,7 +232,7 @@ export function authRoutes(app: Fastify) {
         }
     }, async (request, reply) => {
         const tweetnacl = (await import("tweetnacl")).default;
-        const publicKey = privacyKit.decodeBase64(request.body.publicKey);
+        const publicKey = decodeBase64Either(request.body.publicKey);
         const isValid = tweetnacl.box.publicKeyLength === publicKey.length;
         if (!isValid) {
             return reply.code(401).send({ error: 'Invalid public key' });
