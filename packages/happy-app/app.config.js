@@ -1,13 +1,13 @@
 const variant = process.env.APP_ENV || 'development';
 const name = {
-    development: "Happy (dev)",
-    preview: "Happy (preview)",
-    production: "Happy"
+    development: "AgentsMaestro (dev)",
+    preview: "AgentsMaestro (preview)",
+    production: "AgentsMaestro"
 }[variant];
 const bundleId = {
-    development: "com.slopus.happy.dev",
-    preview: "com.slopus.happy.preview",
-    production: "com.ex3ndr.happy"
+    development: "com.engincore.agentsmaestro.dev",
+    preview: "com.engincore.agentsmaestro.preview",
+    production: "com.engincore.agentsmaestro"
 }[variant];
 // const stagingElevenLabsAgentId = 'agent_7801k2c0r5hjfraa1kdbytpvs6yt';
 const productionElevenLabsAgentId = 'agent_6701k211syvvegba4kt7m68nxjmw';
@@ -25,12 +25,12 @@ const consoleLoggingDefault = {
 export default {
     expo: {
         name,
-        slug: "happy",
+        slug: "agentsmaestro",
         version: "1.7.0",
         runtimeVersion: "21",
         orientation: "default",
         icon: "./sources/assets/images/icon.png",
-        scheme: "happy",
+        scheme: "agentsmaestro",
         userInterfaceStyle: "automatic",
         ios: {
             supportsTablet: true,
