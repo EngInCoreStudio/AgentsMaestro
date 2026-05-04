@@ -476,7 +476,7 @@ export class CodexAppServerClient {
         const initParams: InitializeParams = {
             clientInfo: {
                 name: 'happy-codex',
-                title: 'Happy Codex Client',
+                title: 'AgentsMaestro Codex Client',
                 version: packageJson.version,
             },
             capabilities: {

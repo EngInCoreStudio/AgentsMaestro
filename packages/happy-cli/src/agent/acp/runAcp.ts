@@ -477,7 +477,7 @@ export async function runAcp(opts: {
   });
   const response = await api.getOrCreateSession({ tag: sessionTag, metadata, state });
   if (response) {
-    logAcp('muted', `Happy Session ID: ${response.id}`);
+    logAcp('muted', `AgentsMaestro Session ID: ${response.id}`);
   }
 
   let session: ApiSessionClient;
