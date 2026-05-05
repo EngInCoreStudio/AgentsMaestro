@@ -5,6 +5,19 @@ import { db } from "@/storage/db";
 import { auth } from "@/app/auth/auth";
 import { log } from "@/utils/log";
 
+// [AM] Closed-registration allowlist. When HAPPY_ALLOWED_PUBLIC_KEYS is set
+// (comma-separated hex public keys), only those keys are allowed to create
+// or refresh an account via /v1/auth. When the env var is empty/unset, the
+// endpoint falls back to upstream open-registration behavior (any valid
+// signature creates an account). Comparison is case-insensitive because
+// privacy-kit's encodeHex produces uppercase but operators may paste lowercase.
+function isPublicKeyAllowed(publicKeyHex: string): boolean {
+    const raw = process.env.HAPPY_ALLOWED_PUBLIC_KEYS || '';
+    const allowed = raw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    if (allowed.length === 0) return true;
+    return allowed.includes(publicKeyHex.toLowerCase());
+}
+
 export function authRoutes(app: Fastify) {
     app.post('/v1/auth', {
         schema: {
@@ -26,6 +39,15 @@ export function authRoutes(app: Fastify) {
 
         // Create or update user in database
         const publicKeyHex = privacyKit.encodeHex(publicKey);
+
+        // [AM] Closed-registration check. Reject keys not in allowlist even
+        // when the signature is valid; only kicks in if HAPPY_ALLOWED_PUBLIC_KEYS
+        // is set (otherwise behaves as upstream).
+        if (!isPublicKeyAllowed(publicKeyHex)) {
+            log({ module: 'auth' }, `Rejected /v1/auth: publicKey ${publicKeyHex.substring(0, 12)}... not in allowlist`);
+            return reply.code(403).send({ error: 'Public key not authorized' });
+        }
+
         const user = await db.account.upsert({
             where: { publicKey: publicKeyHex },
             update: { updatedAt: new Date() },
